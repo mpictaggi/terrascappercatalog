@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Terra Scaper — Plant Catalog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Josefin+Sans:wght@300;400;600;700&family=Source+Sans+3:wght@300;400;600&display=swap"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --hunter:   #386641;
+    --sage:     #aaae8e;
+    --chocolate:#d56f3e;
+    --mocha:    #503b31;
+    --steel:    #4a7b9d;
+    --exotic:   #593f62;
+    --bg:       #f0ede8;
+    --surface:  #faf8f5;
+    --border:   #ddd8d0;
+    --text:     #1e1a16;
+    --muted:    #7a6f65;
+  }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ───────────────────────────────────────────────────── */
+  header {
+    background: var(--mocha);
+    padding: 28px 40px 24px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .brand-lockup { line-height: 1; }
+  .brand-name {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: 0.28em;
+    color: var(--sage);
+    text-transform: uppercase;
+  }
+  .brand-sub {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 300;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: rgba(170,174,142,0.65);
+    text-transform: uppercase;
+    margin-top: 5px;
+  }
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+  .btn-generator {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    background: var(--sage);
+    color: var(--mocha);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    transition: background 0.15s;
+  }
+  .btn-generator:hover { background: #c4c8a6; }
+
+  /* ── TOOLBAR ──────────────────────────────────────────────────── */
+  .toolbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 40px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+    max-width: 340px;
+  }
+  .search-wrap svg {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.4;
+  }
+  .search-input {
+    width: 100%;
+    padding: 8px 12px 8px 34px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    font-family: 'Source Sans 3', sans-serif;
+    font-size: 13px;
+    color: var(--text);
+    background: #fff;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .search-input:focus { border-color: var(--steel); }
+
+  .filter-group { display: flex; gap: 7px; flex-wrap: wrap; }
+  .filter-pill {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 13px;
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    background: #fff;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .filter-pill:hover { border-color: var(--mocha); color: var(--mocha); }
+  .filter-pill.active { background: var(--mocha); color: #fff; border-color: var(--mocha); }
+  .filter-pill[data-type="aquatic"].active    { background: var(--steel);     border-color: var(--steel); }
+  .filter-pill[data-type="terrarium"].active  { background: var(--chocolate); border-color: var(--chocolate); }
+  .filter-pill[data-type="vivarium"].active   { background: var(--hunter);    border-color: var(--hunter); }
+  .filter-pill[data-type="houseplant"].active { background: #a7cab1;          border-color: #a7cab1; color: #2a4a33; }
+  .filter-pill[data-type="exotic"].active     { background: var(--exotic);    border-color: var(--exotic); }
+
+  .sort-select {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 7px 12px;
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    background: #fff;
+    color: var(--muted);
+    cursor: pointer;
+    outline: none;
+    margin-left: auto;
+  }
+  .count-badge {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* ── GRID ─────────────────────────────────────────────────────── */
+  .catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 20px;
+    padding: 28px 40px;
+  }
+
+  /* ── CARD ─────────────────────────────────────────────────────── */
+  .plant-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s, transform 0.2s;
+    cursor: default;
+  }
+  .plant-card:hover {
+    box-shadow: 0 6px 24px rgba(80,59,49,0.13);
+    transform: translateY(-2px);
+  }
+
+  .card-accent-bar { height: 5px; flex-shrink: 0; }
+  .card-accent-bar.aquatic    { background: var(--steel); }
+  .card-accent-bar.terrarium  { background: var(--chocolate); }
+  .card-accent-bar.vivarium   { background: var(--hunter); }
+  .card-accent-bar.houseplant { background: #a7cab1; }
+  .card-accent-bar.exotic     { background: var(--exotic); }
+
+  /* ── CARD PHOTO ─────────────────────────────────────────────── */
+  .card-photo {
+    width: 100%;
+    height: 180px;
+    background: var(--bg);
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .card-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .card-photo-empty {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .card-photo-empty svg { opacity: 0.25; }
+  .card-photo-empty span {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    opacity: 0.6;
+  }
+  .card-photo-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(80,59,49,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .card-photo:hover .card-photo-overlay { opacity: 1; }
+  .card-photo-overlay span {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #fff;
+  }
+
+  .card-body { padding: 14px 18px 14px; flex: 1; display: flex; flex-direction: column; }
+
+  .card-habitat {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .card-habitat.aquatic    { color: var(--steel); }
+  .card-habitat.terrarium  { color: var(--chocolate); }
+  .card-habitat.vivarium   { color: var(--hunter); }
+  .card-habitat.houseplant { color: #5a9a6a; }
+  .card-habitat.exotic     { color: var(--exotic); }
+
+  .card-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .card-dot.aquatic    { background: var(--steel); }
+  .card-dot.terrarium  { background: var(--chocolate); }
+  .card-dot.vivarium   { background: var(--hunter); }
+  .card-dot.houseplant { background: #a7cab1; }
+  .card-dot.exotic     { background: var(--exotic); }
+
+  .card-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+    margin-bottom: 3px;
+  }
+  .card-sci {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+  .card-tagline {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.55;
+    flex: 1;
+    margin-bottom: 12px;
+  }
+
+  .card-meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .meta-chip {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 20px;
+    background: rgba(80,59,49,0.07);
+    color: var(--muted);
+  }
+  .meta-chip.difficulty-easy   { background: rgba(56,102,65,0.12);  color: #276030; }
+  .meta-chip.difficulty-mid    { background: rgba(213,111,62,0.12); color: #a04020; }
+  .meta-chip.difficulty-hard   { background: rgba(122,32,32,0.12);  color: #7a2020; }
+  .meta-chip.growth-slow       { background: rgba(74,123,157,0.12); color: #2a5f80; }
+  .meta-chip.growth-moderate   { background: rgba(213,111,62,0.12); color: #a04020; }
+  .meta-chip.growth-fast       { background: rgba(56,102,65,0.12);  color: #276030; }
+
+  .card-footer {
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-sku {
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: #b0a898;
+  }
+  .card-price {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--mocha);
+  }
+
+  .card-actions { display: flex; gap: 7px; margin-top: 12px; }
+  .btn-open {
+    flex: 1;
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: opacity 0.15s;
+  }
+  .btn-open:hover { opacity: 0.85; }
+  .btn-open.primary {
+    background: var(--mocha);
+    color: #fff;
+  }
+  .btn-open.secondary {
+    background: transparent;
+    color: var(--mocha);
+    border: 1.5px solid var(--border);
+  }
+
+  /* ── GENERATOR CARD ───────────────────────────────────────────── */
+  .generator-card {
+    background: var(--mocha);
+    border: none;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .generator-card:hover {
+    box-shadow: 0 6px 24px rgba(80,59,49,0.3);
+    transform: translateY(-2px);
+  }
+  .generator-body {
+    padding: 22px 18px 18px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .gen-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+    line-height: 1;
+  }
+  .gen-title {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--sage);
+    margin-bottom: 6px;
+  }
+  .gen-sub {
+    font-size: 12px;
+    color: rgba(170,174,142,0.7);
+    line-height: 1.55;
+    flex: 1;
+    margin-bottom: 18px;
+  }
+  .btn-gen-open {
+    font-family: 'Josefin Sans', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 10px;
+    background: var(--sage);
+    color: var(--mocha);
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    display: block;
+    transition: background 0.15s;
+  }
+  .btn-gen-open:hover { background: #c4c8a6; }
+
+  /* ── EMPTY STATE ──────────────────────────────────────────────── */
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .empty-state p { font-size: 15px; margin-top: 8px; }
+
+  /* ── FOOTER ───────────────────────────────────────────────────── */
+  footer {
+    text-align: center;
+    padding: 24px;
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: #b0a898;
+    text-transform: uppercase;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ──────────────────────────────────────────────────────────── -->
+<header>
+  <div class="brand-lockup">
+    <div class="brand-name">Terra Scaper</div>
+    <div class="brand-sub">Plant Care Catalog &amp; Brochure Library</div>
+  </div>
+  <div class="header-actions">
+    <a class="btn-generator" href="MasterTerrascaperBrochureGenerator.html" target="_blank">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/><line x1="7" y1="4" x2="7" y2="10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><line x1="4" y1="7" x2="10" y2="7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Open Generator
+    </a>
+  </div>
+</header>
+
+<!-- ── TOOLBAR ──────────────────────────────────────────────────────────── -->
+<div class="toolbar">
+  <div class="search-wrap">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="#888" stroke-width="1.4"/><line x1="9.5" y1="9.5" x2="13" y2="13" stroke="#888" stroke-width="1.4" stroke-linecap="round"/></svg>
+    <input class="search-input" type="text" id="searchInput" placeholder="Search plants…"/>
+  </div>
+
+  <div class="filter-group">
+    <button class="filter-pill active" data-type="all">All</button>
+    <button class="filter-pill" data-type="aquatic">🐠 Aquatic</button>
+    <button class="filter-pill" data-type="terrarium">🌿 Terrarium</button>
+    <button class="filter-pill" data-type="vivarium">🦎 Vivarium</button>
+    <button class="filter-pill" data-type="houseplant">🪴 Houseplant</button>
+    <button class="filter-pill" data-type="exotic">🌺 Exotic</button>
+  </div>
+
+  <select class="sort-select" id="sortSelect">
+    <option value="name">Sort: Name A–Z</option>
+    <option value="name-desc">Sort: Name Z–A</option>
+    <option value="sku">Sort: SKU</option>
+    <option value="price-asc">Sort: Price Low–High</option>
+    <option value="price-desc">Sort: Price High–Low</option>
+    <option value="habitat">Sort: Type</option>
+  </select>
+
+  <span class="count-badge" id="countBadge">13 items</span>
+</div>
+
+<!-- ── GRID ─────────────────────────────────────────────────────────────── -->
+<div class="catalog-grid" id="catalogGrid">
+</div>
+
+<footer>www.terrascaper.com &nbsp;·&nbsp; Plant Care Library</footer>
+
+<script>
+const HABITAT_LABEL = {
+  aquatic:    '🐠 Aquatic',
+  terrarium:  '🌿 Terrarium',
+  vivarium:   '🦎 Vivarium',
+  houseplant: '🪴 Houseplant',
+  exotic:     '🌺 Exotic',
+};
+
+const DIFFICULTY_CLASS = {
+  Beginner:'difficulty-easy', Easy:'difficulty-easy',
+  Intermediate:'difficulty-mid', Medium:'difficulty-mid',
+  Advanced:'difficulty-hard', Expert:'difficulty-hard',
+};
+
+const GROWTH_CLASS = {
+  Slow:'growth-slow', Moderate:'growth-moderate', Fast:'growth-fast',
+};
+
+// ── Plant data ────────────────────────────────────────────────────────────
+// Hardcoded baseline — merged with any plants saved from the generator
+const CATALOG_KEY = 'ts_catalog_library_v1';
+const HARDCODED_PLANTS = [
+  {
+    file: 'TerrascaperBrochure-anubiaspandamarble.html',
+    commonName: "Anubias Panda Marble",
+    scientificName: "Anubias barteri var. 'Panda Marble'",
+    habitat: 'aquatic',
+    difficulty: 'Beginner',
+    growthRate: 'Slow',
+    price: '$24.99',
+    sku: 'TS-AQ-0058',
+    tagline: 'A rare and striking variegated Anubias with bold white and green marbled foliage — a showpiece for any aquascape.',
+  },
+  {
+    file: 'TerrascaperBrochure-babytears.html',
+    commonName: "Baby Tears",
+    scientificName: "Soleirolia soleirolii",
+    habitat: 'vivarium',
+    difficulty: 'Beginner',
+    growthRate: 'Moderate',
+    price: '$7.99',
+    sku: 'TS-VV-0122',
+    tagline: 'A delicate, lush groundcover perfect for creating a vibrant carpet in terrariums and vivariums.',
+  },
+  {
+    file: 'TerrascaperBrochure-beanfern.html',
+    commonName: "Bean Fern",
+    scientificName: "Ophioglossum pendulum",
+    habitat: 'vivarium',
+    difficulty: 'Beginner',
+    growthRate: 'Slow',
+    price: '$11.99',
+    sku: 'TS-VV-0094',
+    tagline: 'A fascinating primitive fern with strappy ribbon-like fronds ideal for humid vivarium environments.',
+  },
+  {
+    file: 'TerrascaperBrochure-buceskeletonking.html',
+    commonName: "Buce 'Skeleton King'",
+    scientificName: "Bucephalandra sp. 'Skeleton King'",
+    habitat: 'aquatic',
+    difficulty: 'Beginner',
+    growthRate: 'Slow',
+    price: '$18.99',
+    sku: 'TS-AQ-0065',
+    tagline: 'A dramatic dark-leafed Bucephalandra with iridescent highlights — a collector\'s gem for refined aquascapes.',
+  },
+  {
+    file: 'TerrascaperBrochure-butterflybegonia.html',
+    commonName: "Butterfly Begonia",
+    scientificName: "Begonia sp. 'Butterfly'",
+    habitat: 'vivarium',
+    difficulty: 'Beginner',
+    growthRate: 'Moderate',
+    price: '$13.99',
+    sku: 'TS-VV-0115',
+    tagline: 'Delicately winged foliage in rich earthy tones — a vivarium jewel that thrives in humid conditions.',
+  },
+  {
+    file: 'TerrascaperBrochure-cebublue.html',
+    commonName: "Pothos 'Cebu Blue'",
+    scientificName: "Epipremnum pinnatum 'Cebu Blue'",
+    habitat: 'vivarium',
+    difficulty: 'Beginner',
+    growthRate: 'Fast',
+    price: '$9.99',
+    sku: 'TS-VV-0101',
+    tagline: 'Silvery-blue metallic foliage that cascades beautifully — one of the most striking Pothos varieties available.',
+  },
+  {
+    file: 'TerrascaperBrochure-fireball.html',
+    commonName: "Neoregelia 'Fireball'",
+    scientificName: "Neoregelia 'Fireball'",
+    habitat: 'vivarium',
+    difficulty: 'Beginner',
+    growthRate: 'Slow',
+    price: '$12.99',
+    sku: 'TS-VV-0088',
+    tagline: 'A miniature bromeliad that blazes crimson under bright conditions — nature\'s living fire in a pot.',
+  },
+  {
+    file: 'TerrascaperBrochure-micans.html',
+    commonName: "Philodendron Micans",
+    scientificName: "Philodendron hederaceum var. hederaceum",
+    habitat: 'terrarium',
+    difficulty: 'Beginner',
+    growthRate: 'Moderate',
+    price: '$10.99',
+    sku: 'TS-TR-0117',
+    tagline: 'Velvety iridescent heart-shaped leaves in rich bronze-green tones — a touch of luxury for any terrarium.',
+  },
+  {
+    file: 'TerrascaperBrochure-neochiquitalinda.html',
+    commonName: "Neo 'Chiquita Linda'",
+    scientificName: "Neoregelia sp. 'Chiquita Linda'",
+    habitat: 'vivarium',
+    difficulty: 'Beginner',
+    growthRate: 'Slow',
+    price: '$14.99',
+    sku: 'TS-VV-0138',
+    tagline: 'A charming miniature bromeliad with soft pastel blushing — delicate beauty perfect for vivarium accents.',
+  },
+  {
+    file: 'TerrascaperBrochure-neotiger-cub.html',
+    commonName: "Neo 'Tiger Cub'",
+    scientificName: "Neoregelia sp. 'Tiger Cub'",
+    habitat: 'vivarium',
+    difficulty: 'Beginner',
+    growthRate: 'Slow',
+    price: '$14.99',
+    sku: 'TS-VV-0131',
+    tagline: 'Bold tiger-striped foliage in a compact rosette form — a striking accent plant for vivarium hardscape.',
+  },
+  {
+    file: 'TerrascaperBrochure-philochocored.html',
+    commonName: "Philodendron El Choco Red",
+    scientificName: "Philodendron sp. 'El Choco Red'",
+    habitat: 'terrarium',
+    difficulty: 'Beginner',
+    growthRate: 'Moderate',
+    price: '$19.99',
+    sku: 'TS-TR-0124',
+    tagline: 'Intensely red new growth fading to deep green — one of the most coveted collector Philodendrons.',
+  },
+  {
+    file: 'TerrascaperBrochure-watermelonbegonia.html',
+    commonName: "Watermelon Begonia",
+    scientificName: "Peperomia argyreia",
+    habitat: 'vivarium',
+    difficulty: 'Beginner',
+    growthRate: 'Slow',
+    price: '$8.99',
+    sku: 'TS-VV-0108',
+    tagline: 'Striking watermelon-patterned foliage in a compact rosette — endlessly cheerful and surprisingly tough.',
+  },,
+  {
+    file: 'TerrascaperBrochure-friendshipplant.html',
+    commonName: "Friendship Plant",
+    scientificName: "Pilea involucrata",
+    habitat: 'terrarium',
+    difficulty: 'Beginner',
+    growthRate: 'Moderate',
+    price: '$8.99',
+    sku: 'TS-TR-0133',
+    tagline: 'A lush, textured groundcover with richly patterned leaves — the perfect companion for any terrarium.',
+  },
+];
+
+// Merge hardcoded + generator-saved plants (generator entries override by SKU)
+function loadAllPlants() {
+  // Primary: brochures registered via localStorage when opened
+  // Fallback: hardcoded list for plants never yet opened
+  let registered = [];
+  try { registered = JSON.parse(localStorage.getItem(CATALOG_KEY) || '[]'); } catch(e) {}
+
+  const bySkuMap = {};
+  // Start with hardcoded baseline
+  HARDCODED_PLANTS.forEach(p => { bySkuMap[p.sku] = { ...p }; });
+  // Overlay with registered (brochure-opened or generator-saved) — these have accurate filenames
+  registered.forEach(p => {
+    bySkuMap[p.sku] = { ...bySkuMap[p.sku], ...p };
+  });
+  return Object.values(bySkuMap).sort((a,b) => a.commonName.localeCompare(b.commonName));
+}
+
+let plants = loadAllPlants();
+
+// Refresh when generator saves a new plant (same-tab or cross-tab)
+window.addEventListener('storage', e => {
+  if (e.key === CATALOG_KEY) { plants = loadAllPlants(); render(); }
+});
+
+// ── Photo storage (localStorage keyed by SKU) ────────────────────────────
+const PHOTO_KEY = 'ts_catalog_photos_v1';
+
+function loadPhotos() {
+  try { return JSON.parse(localStorage.getItem(PHOTO_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function savePhoto(sku, dataUrl) {
+  const photos = loadPhotos();
+  photos[sku] = dataUrl;
+  try { localStorage.setItem(PHOTO_KEY, JSON.stringify(photos)); } catch(e) {
+    // localStorage full — try removing oldest entry
+    const keys = Object.keys(photos);
+    if (keys.length > 1) { delete photos[keys[0]]; photos[sku] = dataUrl; localStorage.setItem(PHOTO_KEY, JSON.stringify(photos)); }
+  }
+}
+
+function getPhotoHTML(sku, habitat) {
+  const photos = loadPhotos();
+  const src = photos[sku];
+  const accentMap = { aquatic:'var(--steel)', terrarium:'var(--chocolate)', vivarium:'var(--hunter)', houseplant:'#a7cab1', exotic:'var(--exotic)' };
+  const accent = accentMap[habitat] || 'var(--muted)';
+  if (src) {
+    return `<img src="${src}" alt="Plant photo"/>
+            <div class="card-photo-overlay"><span>Change Photo</span></div>`;
+  }
+  return `<div class="card-photo-empty" style="background:${accent}11">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="2" y="5" width="24" height="18" rx="3" stroke="${accent}" stroke-width="1.5"/><circle cx="14" cy="14" r="4" stroke="${accent}" stroke-width="1.5"/><circle cx="21" cy="9" r="1.5" fill="${accent}"/></svg>
+    <span>Add Cover Photo</span>
+  </div>`;
+}
+
+function triggerPhotoUpload(sku) {
+  document.getElementById('photo-input-' + sku).click();
+}
+
+function handlePhotoUpload(e, sku) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const dataUrl = ev.target.result;
+    savePhoto(sku, dataUrl);
+    // Find which plant this SKU belongs to and re-render its display div
+    const display = document.getElementById('photo-display-' + sku);
+    if (display) {
+      const plant = plants.find(p => p.sku === sku);
+      display.innerHTML = getPhotoHTML(sku, plant ? plant.habitat : 'aquatic');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── PDF export from catalog ──────────────────────────────────────────────
+function exportPdf(sku, file) {
+  if (!file) return;
+  // Write the trigger so the brochure auto-fires PDF on open
+  localStorage.setItem('ts_auto_pdf_trigger', sku);
+  // Open the brochure — it will detect the trigger and auto-export
+  window.open(file, '_blank');
+}
+
+// ── State ─────────────────────────────────────────────────────────────────
+let activeFilter = 'all';
+let searchTerm   = '';
+let sortBy       = 'name';
+
+// ── Render ────────────────────────────────────────────────────────────────
+function render() {
+  let filtered = plants.filter(p => {
+    const matchType   = activeFilter === 'all' || p.habitat === activeFilter;
+    const matchSearch = !searchTerm ||
+      p.commonName.toLowerCase().includes(searchTerm) ||
+      p.scientificName.toLowerCase().includes(searchTerm) ||
+      p.sku.toLowerCase().includes(searchTerm) ||
+      p.tagline.toLowerCase().includes(searchTerm);
+    return matchType && matchSearch;
+  });
+
+  filtered.sort((a, b) => {
+    switch (sortBy) {
+      case 'name':       return a.commonName.localeCompare(b.commonName);
+      case 'name-desc':  return b.commonName.localeCompare(a.commonName);
+      case 'sku':        return a.sku.localeCompare(b.sku);
+      case 'price-asc':  return parseFloat(a.price.replace('$','')) - parseFloat(b.price.replace('$',''));
+      case 'price-desc': return parseFloat(b.price.replace('$','')) - parseFloat(a.price.replace('$',''));
+      case 'habitat':    return a.habitat.localeCompare(b.habitat) || a.commonName.localeCompare(b.commonName);
+      default:           return 0;
+    }
+  });
+
+  const grid = document.getElementById('catalogGrid');
+  const badge = document.getElementById('countBadge');
+  badge.textContent = `${filtered.length + 1} item${filtered.length !== 0 ? 's' : ''}`;
+
+  grid.innerHTML = '';
+
+  // Generator card always first
+  const genCard = document.createElement('div');
+  genCard.className = 'generator-card';
+  genCard.innerHTML = `
+    <div class="generator-body">
+      <div class="gen-icon">✦</div>
+      <div class="gen-title">Brochure Generator</div>
+      <div class="gen-sub">Create new plant care brochures. Manage your plant library, add photos, and export print-ready A4 PDFs.</div>
+      <a class="btn-gen-open" href="MasterTerrascaperBrochureGenerator.html" target="_blank">Open Generator →</a>
+    </div>`;
+  grid.appendChild(genCard);
+
+  if (filtered.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.innerHTML = '<div style="font-size:32px;margin-bottom:8px;">🌿</div><p>No plants match your search.</p>';
+    grid.appendChild(empty);
+    return;
+  }
+
+  filtered.forEach(p => {
+    const diffClass   = DIFFICULTY_CLASS[p.difficulty]  || 'difficulty-easy';
+    const growthClass = GROWTH_CLASS[p.growthRate]       || 'growth-slow';
+
+    const card = document.createElement('div');
+    card.className = 'plant-card';
+    card.innerHTML = `
+      <div class="card-accent-bar ${p.habitat}"></div>
+      <div class="card-photo" onclick="triggerPhotoUpload('${p.sku}')" title="Click to add cover photo">
+        <input type="file" accept="image/*" id="photo-input-${p.sku}" style="display:none" onchange="handlePhotoUpload(event,'${p.sku}')"/>
+        <div id="photo-display-${p.sku}">
+          ${getPhotoHTML(p.sku, p.habitat)}
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-habitat ${p.habitat}">
+          <div class="card-dot ${p.habitat}"></div>
+          ${HABITAT_LABEL[p.habitat] || p.habitat}
+        </div>
+        <div class="card-name">${p.commonName}</div>
+        <div class="card-sci">${p.scientificName}</div>
+        <div class="card-tagline">${p.tagline}</div>
+        <div class="card-meta">
+          <span class="meta-chip ${diffClass}">${p.difficulty}</span>
+          <span class="meta-chip ${growthClass}">${p.growthRate}</span>
+        </div>
+        <div class="card-footer">
+          <span class="card-sku">${p.sku}${p.source==='generator'&&!p.file?' <span style="color:var(--hunter);font-size:9px;letter-spacing:0.08em;">✦ NEW</span>':''}</span>
+          <span class="card-price">${p.price}</span>
+        </div>
+        <div class="card-actions">
+          ${p.file
+            ? `<a class="btn-open primary" href="${p.file}" target="_blank">Open Brochure</a>
+               <button class="btn-open secondary" onclick="exportPdf('${p.sku}','${p.file}')">⬇ PDF</button>`
+            : `<a class="btn-open primary" href="MasterTerrascaperBrochureGenerator.html" target="_blank">Open in Generator</a>`
+          }
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ── Event listeners ────────────────────────────────────────────────────────
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchTerm = e.target.value.toLowerCase().trim();
+  render();
+});
+
+document.getElementById('sortSelect').addEventListener('change', e => {
+  sortBy = e.target.value;
+  render();
+});
+
+document.querySelectorAll('.filter-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+    activeFilter = pill.dataset.type;
+    render();
+  });
+});
+
+// Initial render
+render();
+</script>
+</body>
+</html>
